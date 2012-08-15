@@ -1,0 +1,39 @@
+* These are the pin descriptions for the dev board I'm using(see readme) *
+* If you don't want to modify the code, try to lay out your board so it  *
+* matches this.                                                          *
+
+
+=== LCD ===
+
+CS -> GPIOC Pin 8
+RS -> GPIOC Pin 9
+nWr -> GPIOC Pin 10
+nRd -> GPIOC Pin 11
+Rst -> GPIOC Pin 12
+
+Light toggle -> GPIOC Pin 13
+
+Data: last 8 of GPIOB(8-15), first 8 of GPIOC(0-7)
+
+[[ example for writing 16 bits of data:             ]]
+[[ GPIOB->ODR=((GPIOB->ODR&0x00FF) | (data << 8 )); ]]
+[[ GPIOC->ODR=((GPIOC->ODR&0xFF00) | (data >> 8 )); ]]
+
+
+=== SD Card ===
+
+SCK -> GPIOA Pin 5
+MISO -> GPIOA Pin 6
+MOSI -> GPIOA Pin 7
+CS -> GPIOB Pin 6
+
+
+=== LEDs ===
+
+LED2 -> GPIOA Pin 0
+LED3 -> GPIOA Pin 1
+
+
+=== Touch ===
+
+not utilized, I don't really konw lol
