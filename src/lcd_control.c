@@ -8,8 +8,11 @@
  */
 
 #include "stm32f1x.h"
+#include "lcd_control.h"
 
 u16 DeviceCode;
+
+static LCD_OrientationMode_t orientation_mode = LCD_ORIENTATION_DEFAULT;
 
 void LCD_Configuration(void)
 {
@@ -70,82 +73,7 @@ void LCD_Initialization()
 	for (i = 50000;i > 0;i--);
 	for (i = 50000;i > 0;i--);
 	LCD_DeviceCode = LCD_ReadRegister(0x0000);
-	if (LCD_DeviceCode==0x9325 || LCD_Device_code == 0x9328)
-	{
-		LCD_WriteRegister(0x00e7,0x0010);
-		LCD_WriteRegister(0x0000,0x0001);			// Starts internal oscillator
-		LCD_WriteRegister(0x0001,0x0100);
-		LCD_WriteRegister(0x0002,0x0700);			// Power on
-		LCD_WriteRegister(0x0003,(1 << 12) | (1 << 5) | (1 << 4));		// 65K
-		LCD_WriteRegister(0x0004,0x0000);
-		LCD_WriteRegister(0x0008,0x0207);
-		LCD_WriteRegister(0x0009,0x0000);
-		LCD_WriteRegister(0x000a,0x0000);			// Display setting
-		LCD_WriteRegister(0x000c,0x0001);
-		LCD_WriteRegister(0x000d,0x0000);
-		LCD_WriteRegister(0x000f,0x0000);
-
-		// Power on sequence
-		LCD_WriteRegister(0x0010,0x0000);
-		LCD_WriteRegister(0x0011,0x0007);
-		LCD_WriteRegister(0x0012,0x0000);
-		LCD_WriteRegister(0x0013,0x0000); 
-		for (i = 50000;i > 0;i--);
-		for (i = 50000;i > 0;i--);
-		LCD_WriteRegister(0x0010,0x1590);
-		LCD_WriteRegister(0x0011,0x0227);
-		for (i = 50000;i > 0;i--);
-		for (i = 50000;i > 0;i--);
-		LCD_WriteRegister(0x0012,0x009c);
-		for (i = 50000;i > 0;i--);
-		for (i = 50000;i > 0;i--);
-		LCD_WriteRegister(0x0013,0x1900);
-		LCD_WriteRegister(0x0029,0x0023);
-		LCD_WriteRegister(0x002b,0x000e);
-		for (i = 50000;i > 0;i--);
-		for (i = 50000;i > 0;i--);
-		LCD_WriteRegister(0x0020,0x0000);
-		LCD_WriteRegister(0x0021,0x0000);
-		for (i = 50000;i > 0;i--);
-		for (i = 50000;i > 0;i--);
-		LCD_WriteRegister(0x0030,0x0007);
-		LCD_WriteRegister(0x0031,0x0707);
-		LCD_WriteRegister(0x0032,0x0006);
-		LCD_WriteRegister(0x0035,0x0704);
-		LCD_WriteRegister(0x0036,0x1f04);
-		LCD_WriteRegister(0x0037,0x0004);
-		LCD_WriteRegister(0x0038,0x0000);
-		LCD_WriteRegister(0x0039,0x0706);
-		LCD_WriteRegister(0x003c,0x0701);
-		LCD_WriteRegister(0x003d,0x000f);
-		for (i = 50000;i > 0;i--);
-		for (i = 50000;i > 0;i--);
-		LCD_WriteRegister(0x0050,0x0000);
-		LCD_WriteRegister(0x0051,0x00ef);
-		LCD_WriteRegister(0x0052,0x0000);
-		LCD_WriteRegister(0x0053,0x013f);
-		LCD_WriteRegister(0x0060,0xa700);
-		LCD_WriteRegister(0x0061,0x0001);
-		LCD_WriteRegister(0x006a,0x0000);
-		LCD_WriteRegister(0x0080,0x0000);
-		LCD_WriteRegister(0x0081,0x0000);
-		LCD_WriteRegister(0x0082,0x0000);
-		LCD_WriteRegister(0x0083,0x0000);
-		LCD_WriteRegister(0x0084,0x0000);
-		LCD_WriteRegister(0x0085,0x0000);
-		LCD_WriteRegister(0x0090,0x0010);
-		LCD_WriteRegister(0x0092,0x0000);
-		LCD_WriteRegister(0x0093,0x0003);
-		LCD_WriteRegister(0x0095,0x0110);
-		LCD_WriteRegister(0x0097,0x0000);
-		LCD_WriteRegister(0x0098,0x0000);
-
-		// Display on sequence
-		LCD_WriteRegister(0x0007,0x0133);
-		LCD_WriteRegister(0x0020,0x0000);
-		LCD_WriteRegister(0x0021,0x0000);
-	}
-	else if (LCD_DeviceCode == 0x9320)
+	if (LCD_DeviceCode == 0x9320)
 	{
 		LCD_WriteRegister(0x00,0x0000);		// Start Oscillation
 		LCD_WriteRegister(0x01,0x0100);		// Driver output control (makes it scan top left to bottom right, odd for top half, even for bottom)
@@ -434,4 +362,198 @@ void LCD_WriteData(u16 data)
 {
 	GPIOB->ODR = ((GPIOB->ODR&0x00ff) | (data << 8));
 	GPIOC->ODR = ((GPIOC->ODR&0xff00) | (data >> 8));
+}
+
+/*
+ * Name: u16 LCD_ReadData(void)
+ * Function: read controller data
+ * Input: none
+ * Output: data
+ * Call: x = LCD_ReadData();
+ */
+__inline u16 LCD_ReadData(void)
+{
+	u16 temp;
+	GPIOB->CRH = (GPIOB->CRH & 0x00000000) | 0x44444444;		// configure pins for reading
+	GPIOC->CRL = (GPIOC->CRL & 0x00000000) | 0x44444444;
+	temp = (((GPIOB->IDR) >> 8) | ((GPIOC->IDR) << 8));			// read in the data
+	GPIOB->CRH = (GPIOB->CRH & 0x00000000) | 0x44444444;		// reconfigure back to normal operation
+	GPIOC->CRL = (GPIOC->CRL & 0x00000000) | 0x44444444;
+	return temp;
+}
+
+/*
+ * Name: u16 LCD_ReadRegister(u16 index)
+ * Function Read the value of the address register
+ * Input: index of the register you want to read
+ * Output: Register value
+ * Call: x = LCD_ReadRegister(0x22);
+ */
+__inline u16 LCD_ReadRegister(u16 index)
+{
+	Clr_Cs;
+	LCD_WriteIndex(index);
+	Clr_nRd;
+	index = LCD_ReadData();
+	Set_nRd;
+	Set_Cs;
+	return index;
+}
+
+/*
+ * MAY BE WRONG
+ * Name: void LCD_WriteRegister(u16 index,u16 data)
+ * Function: Write data to register
+ * Input: index of register and data to go there
+ * Output: none
+ * Call: LCD_WriteRegister(0x00,0x0001);
+ */
+__inline void LCD_WriteRegister(u16 index,u16 data)
+{
+	Clr_Cs;
+	Clr_Rs;
+	Set_nRd;
+	LCD_WriteData(index);
+
+	Clr_nWr;Set_nWr;
+	Set_Rs;
+	LCD_WriteData(data);
+
+	Clr_nWr;Set_nWr;
+	Set_Cs;
+}
+
+/*
+ * Name: void LCD_Reset()
+ * Function: reset ili9320 controller
+ * Input: none
+ * Output: none
+ * Call: LCD_Reset();
+ */
+void LCD_Reset()
+{
+	Set_Rst;
+	LCD_Delay(50000);
+	Clr_Rst;
+	LCD_Delay(50000);
+	Set_Rst;
+	LCD_Delay(50000);
+}
+
+/*
+ * Name: LCD_Backlight(bool status)
+ * Function: turn on or off backlight
+ * Input: 1 for on, 0 for off
+ * Output: none
+ * Call: LCD_Backlight(1);
+ */
+void LCD_Backlight(bool status)
+{
+	if(status)
+	{
+		LCD_Light_On;
+	}
+	else
+	{
+		LCD_Light_Off;
+	}
+}
+
+/*
+ * Name: void LCD_Delay(vu32 nCount)
+ * Function: Delay nCount many counts
+ * Input: nCount, number of counts
+ * Output: none
+ * Call: LCD_Delay(50000);
+ */
+void LCD_Delay(vu32 nCount)
+{
+	for(;nCount != 0;nCount--);
+}
+
+/*
+ * Name: void LCD_SetOrienatation(LCD_OrientationMode_t m)
+ * Function: sets the orientation of the LCD
+ * Input: orientation mode
+ * Output: none
+ * Call: LCD_SetOrientation(mode);
+ */
+void LCD_SetOrientation(LCD_OrientationMode_t m)
+{
+	uint16_t em;
+	switch (m)
+	{
+		case LCD_PORTRAIT_TOP_DOWN:
+			em = 0x1030;
+			break;
+		case LCD_PORTRAIT_BOTTOM_UP:
+			em = 0x1010;
+			break;
+		case LCD_LANDSCAPE_TOP_DOWN:
+			em = 0x1018;
+			break;
+		case LCD_LANDSCAPE_BOTTOM_UP:
+			em = 0x1008;
+			break;
+		default:
+			em = 0x0130;
+			break;
+	}
+	LCD_WriteRegister(0x0003,em);
+	orientation_mode = m;
+	LCD_SetCursor(0,0);
+}
+
+/*
+ * Name: LCD_OrientationMode_t LCD_GetOrientation(void)
+ * Function: returns the current orientation of the LCD
+ * Input: none
+ * Output: orientation
+ * Call: x = LCD_GetOrientation();
+ */
+LCD_Orientation_Mode_t LCD_GetOrientation(void)
+{
+	return orientation_mode;
+}
+
+/*
+ * Name: uint16_t LCD_GetWidth(void)
+ * Function: Get the width of the LCD in pixels in the current orientation
+ * Input: none
+ * Output: width
+ * Call: x = LCD_GetWidth();
+ */
+uint16_t LCD_GetWidth(void)
+{
+	switch (orientation_mode)
+	{
+		case LCD_LANDSCAPE_TOP_DOWN:
+		case LCD_LANDSCAPE_BOTTOM_UP:
+			return LCD_HEIGHT_HW;
+		case LCD_PORTRAIT_TOP_DOWN:
+		case LCD_PORTRAIT_BOTTOM_UP:
+		default:
+			return LCD_WIDTH_HW;
+	}
+}
+
+/*
+ * Name: uint16_t LCD_GetHeight(void)
+ * Function: Get the height of the LCD in pixels in the current orientation
+ * Input: none
+ * Output: height
+ * Call: y = LCD_GetHeight();
+ */
+uint16_t LCD_GetHeight(void)
+{
+	switch (orientation_mode)
+	{
+		case LCD_LANDSCAPE_TOP_DOWN:
+		case LCD_LANDSCAPE_BOTTOM_UP:
+			return LCD_WIDTH_HW;
+		case LCD_PORTRAIT_TOP_DOWN:
+		case LCD_PORTRAIT_BOTTOM_UP:
+		default:
+			return LCD_HEIGHT_HW;
+	}
 }
