@@ -33,8 +33,8 @@
 typedef enum {
 	LCD_PORTRAIT_TOP_DOWN,
 	LCD_PORTRAIT_BOTTOM_UP,
-	LCD_LANDSCAPE_TOP_DOWN;
-	LCD_LANDSCAPE_BOTTOM_UP;
+	LCD_LANDSCAPE_TOP_DOWN,
+	LCD_LANDSCAPE_BOTTOM_UP,
 } LCD_OrientationMode_t;
 
 #define LCD_WIDTH_HW		240
@@ -77,7 +77,9 @@ void LCD_Delay(u32 nCount);
 void LCD_Test(void);
 void LCD_WriteData(u16 data);
 void LCD_WriteIndex(u16 idx);
-void LCD_Backlight(bool status);
+void LCD_Backlight(u16 status);
+void LCD_WR_Start(void);
+void LCD_WR_End(void);
 
 u16 LCD_BGR2RGB(u16 color);
 u16 LCD_ReadData(void);

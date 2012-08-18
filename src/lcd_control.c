@@ -7,10 +7,12 @@
  * you as much as they have helped me.
  */
 
-#include "stm32f1x.h"
+#include "stm32f10x.h"
+#include "stm32f10x_rcc.h"
+#include "stm32f10x_gpio.h"
 #include "lcd_control.h"
 
-u16 DeviceCode;
+u16 LCD_DeviceCode;
 
 static LCD_OrientationMode_t orientation_mode = LCD_ORIENTATION_DEFAULT;
 
@@ -65,25 +67,20 @@ void LCD_Initialization()
 	LCD_Reset();	// reset LCD
 
 	// Wait a bit
-	for (i = 50000;i > 0;i--);
-	for (i = 50000;i > 0;i--);
-	for (i = 50000;i > 0;i--);
 	LCD_WriteRegister(0x0000,0x0001);
 	LCD_Delay(10000);
-	for (i = 50000;i > 0;i--);
-	for (i = 50000;i > 0;i--);
 	LCD_DeviceCode = LCD_ReadRegister(0x0000);
 	if (LCD_DeviceCode == 0x9320)
 	{
 		LCD_WriteRegister(0x00,0x0000);		// Start Oscillation
 		LCD_WriteRegister(0x01,0x0100);		// Driver output control (makes it scan top left to bottom right, odd for top half, even for bottom)
 		LCD_WriteRegister(0x02,0x0700);		// Line inversion on the LCD Driving Wave Control
-		LCD_WriteRegister(0x03,0x1018);		// Entry mode set(may need changing
+		LCD_WriteRegister(0x03,0x1018);		// Entry mode set(may need changing)(0x1018)
 		LCD_WriteRegister(0x04,0x0000);		// Resizing stuff(not needed by me)
 		LCD_WriteRegister(0x08,0x0202);		// (Display control 2) Set 2 lines for for both front and back porch(minimum number, helps VSYNC)
 		LCD_WriteRegister(0x09,0x0000);		// (Display control 3) Sets 0 frame scan cycle(not needed for this communication) and normal scan
 		LCD_WriteRegister(0x0a,0x0000);		// Not necessary(FMARK signal stuff)
-		LCD_WriteRegister(0x0c,0x0001);		// 16-bit RGB interface(1 transfer/pixel), using internal system clock and system interface
+		LCD_WriteRegister(0x0c,(1<<0));		// 16-bit RGB interface(1 transfer/pixel), using internal system clock and system interface (0x0001)
 		LCD_WriteRegister(0x0d,0x0000);		// Frame Marker at position 0(starts outputting frame right away
 		LCD_WriteRegister(0x0f,0x0000);		// Data input on rising edge of DOTCLK, data written when ENABLE=0,HSPL/VSPL(H/VSYNC pins) Low polarit = active
 
@@ -93,13 +90,13 @@ void LCD_Initialization()
 		for (i = 50000;i > 0;i--);
 		for (i = 50000;i > 0;i--);
 
-		LCD_WriteRegister(0x10,0x10c0);		// (Power control 1) Enable power supply
+		LCD_WriteRegister(0x10,(1 << 12) | (0 << 8) | (1 << 7) | (1 << 6) | (0 << 4));		// (Power control 1) Enable power supply(0x10c0)
 		LCD_WriteRegister(0x11,0x0007);		// (Power control 2) Ref. voltage(VciOUT) = Vci1, operating frequency = Fosc in circuit 1 and Fosc/16 in circuit 2
-		LCD_WriteRegister(0x12,0x0110);		// (Power control 3) Enable VGL output, use internal electric volume(VCM) to set VcomH(Vcom center voltage level
-		LCD_WriteRegister(0x13,0x0a00);		// (Power control 4) VCOM Amplitude = VREG1OUT x 0.90
+		LCD_WriteRegister(0x12,(1 << 8) | (1 << 4) | (0 << 0));		// (Power control 3) Enable VGL output, use internal electric volume(VCM) to set VcomH(Vcom center voltage level(0x0110)
+		LCD_WriteRegister(0x13,0x0b00);		// (Power control 4) VCOM Amplitude = VREG1OUT x 0.90
 		LCD_WriteRegister(0x29,0x0000);		// (Power control 7) VcomH voltage = VREG1OUT x .69
 
-		LCD_WriteRegister(0x2b,0x0008);		// 90Hz frame rate, internal resistor. (maybe should be 0x0408)
+		LCD_WriteRegister(0x2b,(1 << 14) | (1 << 4));		// 90Hz frame rate, internal resistor. (maybe should be 0x0408)(0x0008)
 
 		// Horiz. and Vert. RAM Address Position. Set up for 320x240
 		LCD_WriteRegister(0x50,0);			// X starts at 0
@@ -109,7 +106,7 @@ void LCD_Initialization()
 
 		LCD_WriteRegister(0x60,0x2700);		// (Driver output control) Gate scans at 0, ends after 320 lines
 		LCD_WriteRegister(0x61,0x0001);		// (Driver output control) grayscale inversion
-		LCD_WriteRegister(0x62,0x0000);		// (Vertical scroll control) not used
+		LCD_WriteRegister(0x6a,0x0000);		// (Vertical scroll control) not used
 
 		LCD_WriteRegister(0x80,0x0000);		// Display position for partial image 1
 		LCD_WriteRegister(0x81,0x0000);		// RAM address for start of partial image 1
@@ -118,14 +115,14 @@ void LCD_Initialization()
 		LCD_WriteRegister(0x84,0x0000);		// RAM address for start of partial image 2
 		LCD_WriteRegister(0x85,0x0000);		// RAM address for end of partial image 2
 
-		LCD_WriteRegister(0x90,0x0010);		// (Panel interface control 1) Sets clock number for internal clock
+		LCD_WriteRegister(0x90,(0 << 7) | (16 << 0));		// (Panel interface control 1) Sets clock number for internal clock
 		LCD_WriteRegister(0x92,0x0000);		// (Panel interface control 2) 0 Clocks of overlap when synced
 		LCD_WriteRegister(0x93,0x0001);		// (Panel interface control 3) 1 Clock output position when synced
 		LCD_WriteRegister(0x95,0x0110);		// (Panel interface control 4) Division ration of 1/4, 16 clocks per horizontal line
-		LCD_WriteRegister(0x97,0x0000);		// (Panel interface control 5) 0 Clock non-overlap
+		LCD_WriteRegister(0x97,(0 << 8));		// (Panel interface control 5) 0 Clock non-overlap
 		LCD_WriteRegister(0x98,0x0000);		// (Panel interface control 6) Source output position 0 clocks
 
-		LCD_WriteRegister(0x07,0x0133);		// (Display control 1) Set display to operate, base image display, normal display (maybe should be 0x0173)
+		LCD_WriteRegister(0x07,0x0173);		// (Display control 1) Set display to operate, base image display, normal display (maybe should be 0x0173)
 	}
 	for (i = 50000;i > 0;i--);
 	LCD_Clear(LCD_Red);
@@ -198,12 +195,10 @@ void LCD_SetPoint(u16 x,u16 y,u16 Color)
 		return;
 	}
 	LCD_SetCursor(x,y);
-	Clr_Cs;
-	LCD_WriteIndex(0x22);
-	Set_Rs;
+	LCD_WR_Start();
 	LCD_WriteData(Color);
 	Clr_nWr; Set_nWr;
-	Set_Cs;
+	LCD_WR_End();
 }
 
 /*
@@ -216,16 +211,15 @@ void LCD_SetPoint(u16 x,u16 y,u16 Color)
 void LCD_DrawPicture(u16 Startx,u16 Starty,u16 Endx,u16 Endy,u16 *pic)
 {
 	u16 i;
+	LCD_SetWindow(Startx,Starty,Endx,Endy);
 	LCD_SetCursor(Startx,Starty);
-	Clr_cs;
-	LCD_WriteIndex(0x0022);
-	Set_Rs;
+	LCD_WR_Start();
 	for (i = 0;i < (Endx * Endy);i++)
 	{
 		LCD_WriteData(*pic++);
 		Clr_nWr;Set_nWr;
 	}
-	Set_Cs;
+	LCD_WR_End();
 }
 
 /*
@@ -244,9 +238,7 @@ void LCD_Test()
 	LCD_WriteRegister(0x51,239);	// Set horizontal end of window at 239
 	LCD_WriteRegister(0x52,0);		// Set vertical start of window at 0
 	LCD_WriteRegister(0x53,319);	// Set vertical end of window at 319
-	Clr_Cs;
-	LCD_WriteIndex(0x22);
-	Set_Rs;
+	LCD_WR_Start();
 	R_data = 0;G_data = 0;B_data = 0;
 	/********** RED **********/
 	for (j = 0;j < 50;j++)
@@ -313,7 +305,7 @@ void LCD_Test()
 			Clr_nWr;Set_nWr;
 		}
 	}
-	Set_Cs;
+	LCD_WR_End();
 }
 
 /*
@@ -365,6 +357,36 @@ void LCD_WriteData(u16 data)
 }
 
 /*
+ * Name: void LCD_WR_Start(void)
+ * Function: Prepare write
+ * Input: none
+ * Output: none
+ * Call: LCD_WR_Start();
+ */
+void LCD_WR_Start(void)
+{
+	Clr_Cs;
+	Clr_Rs;
+	Set_nRd;
+	LCD_WriteData(0x22);
+	Clr_nWr;
+	Set_nWr;
+	Set_Rs;
+}
+
+/*
+ * Name: void LCD_WR_End(void)
+ * Function: end write
+ * Input: none
+ * Output: none
+ * Call: LCD_WR_End();
+ */
+void LCD_WR_End(void)
+{
+	Set_Cs;
+}
+
+/*
  * Name: u16 LCD_ReadData(void)
  * Function: read controller data
  * Input: none
@@ -401,7 +423,6 @@ __inline u16 LCD_ReadRegister(u16 index)
 }
 
 /*
- * MAY BE WRONG
  * Name: void LCD_WriteRegister(u16 index,u16 data)
  * Function: Write data to register
  * Input: index of register and data to go there
@@ -412,7 +433,6 @@ __inline void LCD_WriteRegister(u16 index,u16 data)
 {
 	Clr_Cs;
 	Clr_Rs;
-	Set_nRd;
 	LCD_WriteData(index);
 
 	Clr_nWr;Set_nWr;
@@ -441,15 +461,15 @@ void LCD_Reset()
 }
 
 /*
- * Name: LCD_Backlight(bool status)
+ * Name: LCD_Backlight(u16 status)
  * Function: turn on or off backlight
  * Input: 1 for on, 0 for off
  * Output: none
  * Call: LCD_Backlight(1);
  */
-void LCD_Backlight(bool status)
+void LCD_Backlight(u16 status)
 {
-	if(status)
+	if(status >= 1)
 	{
 		LCD_Light_On;
 	}
@@ -511,7 +531,7 @@ void LCD_SetOrientation(LCD_OrientationMode_t m)
  * Output: orientation
  * Call: x = LCD_GetOrientation();
  */
-LCD_Orientation_Mode_t LCD_GetOrientation(void)
+LCD_OrientationMode_t LCD_GetOrientation(void)
 {
 	return orientation_mode;
 }

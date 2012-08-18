@@ -36,4 +36,4 @@ LED3 -> GPIOA Pin 1
 
 === Touch ===
 
-not utilized, I don't really konw lol
+not utilized, I don't really know lol

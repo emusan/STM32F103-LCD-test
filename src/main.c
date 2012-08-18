@@ -1,32 +1,37 @@
-/***************************************************************************
- * Test program for Olimex "STM32-H103", header board for "STM32F103RBT6".
- * After program start green LED(LED_E) will blink.
- *
- * Program has to be compiled with optimizer setting "-O0".
- * Otherwise delay via while-loop will not work correctly.
- * Setup compiler optimizer setting to "-O0" in file "Makefile.common"
- *************************************************************************/
+/*
+ * A quick test program to test the LCD on the dev board mentioned in 
+ * the readme. Also blinks an LED and does some floating point calcs for 
+ * fun and testing :D.
+ * 
+ * If this helps you do something cool let me know!
+ */
 
 #include "stm32f10x.h"
 #include "stm32f10x_rcc.h"
 #include "stm32f10x_gpio.h"
+#include "lcd_control.h"
 
 int main(int argc, char *argv[])
 {
-	GPIO_InitTypeDef GPIO_InitStructure;
+	LCD_Configuration();
+	LCD_Initialization();
+	//GPIO_InitTypeDef GPIO_InitStructure;
 	u32 delay;
 
-	/* GPIOC Periph clock enable */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,ENABLE);
+	/* GPIOA Periph clock enable */
+	//RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
 
 	/* Configure PC12 to mode: slow rise-time, pushpull output */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;//GPIO No. 12
+	/*GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;//GPIO No. 0
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;;//slow rise time
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;// push-pull output
-	GPIO_Init(GPIOC,&GPIO_InitStructure);//GPIOC init
+	GPIO_Init(GPIOA,&GPIO_InitStructure);//GPIOA init*/
+
+	//LCD_Test();
 
 	while(1)
 	{
+		LCD_Clear(LCD_Blue);
 		/* make some float calculations */
 		float x = 42,y = 23,z = 7;
 		int i = 0;
@@ -35,9 +40,8 @@ int main(int argc, char *argv[])
 			z = (x*y)/z;
 		};
 
-		/* GPIO PC12 set, pin=high,LED_E off */
-		GPIOC->BSRR = GPIO_BSRR_BS12;
-		/* GPIO_WriteBit(GPIOC,GPIO_Pin_12,Bit_SET); */
+		/* GPIO PA0 set, pin=high,LED2 off */
+		//GPIO_WriteBit(GPIOA,GPIO_Pin_1,Bit_SET);
 
 		/*delay ->> compiler optimizer settings must be "-O0" */
 		delay = 500000;
@@ -46,14 +50,14 @@ int main(int argc, char *argv[])
 			delay--;
 		}
 
-		/* GPIO PC12 reset pin=low, LED_E on */
-		GPIOC->BSRR = GPIO_BSRR_BR12;
-		/* GPIO_WriteBit(GPIOC,GPIO_Pin_12,Bit_RESET);*/
+		/* GPIO PA0 reset pin=low, LED2 on */
+		//GPIO_WriteBit(GPIOA,GPIO_Pin_1,Bit_RESET);
 
 		/* delay --> blah */
 		delay = 500000;
 		while(delay)
+		{
 			delay--;
-			
+		}
 	}
 }
