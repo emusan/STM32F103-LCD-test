@@ -70,7 +70,82 @@ void LCD_Initialization()
 	LCD_WriteRegister(0x0000,0x0001);
 	LCD_Delay(10000);
 	LCD_DeviceCode = LCD_ReadRegister(0x0000);
-	if (LCD_DeviceCode == 0x9320)
+	if (LCD_DeviceCode==0x9325 || LCD_DeviceCode == 0x9328)			// This is what we haz
+	{
+		LCD_WriteRegister(0x00e7,0x0010);
+		LCD_WriteRegister(0x0000,0x0001);			// Starts internal oscillator
+		LCD_WriteRegister(0x0001,0x0100);
+		LCD_WriteRegister(0x0002,0x0700);			// Power on
+		LCD_WriteRegister(0x0003,(1 << 12) | (1 << 5) | (1 << 4));		// 65K
+		LCD_WriteRegister(0x0004,0x0000);
+		LCD_WriteRegister(0x0008,0x0207);
+		LCD_WriteRegister(0x0009,0x0000);
+		LCD_WriteRegister(0x000a,0x0000);			// Display setting
+		LCD_WriteRegister(0x000c,0x0001);
+		LCD_WriteRegister(0x000d,0x0000);
+		LCD_WriteRegister(0x000f,0x0000);
+
+		// Power on sequence
+		LCD_WriteRegister(0x0010,0x0000);
+		LCD_WriteRegister(0x0011,0x0007);
+		LCD_WriteRegister(0x0012,0x0000);
+		LCD_WriteRegister(0x0013,0x0000); 
+		for (i = 50000;i > 0;i--);
+		for (i = 50000;i > 0;i--);
+		LCD_WriteRegister(0x0010,0x1590);
+		LCD_WriteRegister(0x0011,0x0227);
+		for (i = 50000;i > 0;i--);
+		for (i = 50000;i > 0;i--);
+		LCD_WriteRegister(0x0012,0x009c);
+		for (i = 50000;i > 0;i--);
+		for (i = 50000;i > 0;i--);
+		LCD_WriteRegister(0x0013,0x1900);
+		LCD_WriteRegister(0x0029,0x0023);
+		LCD_WriteRegister(0x002b,0x000e);
+		for (i = 50000;i > 0;i--);
+		for (i = 50000;i > 0;i--);
+		LCD_WriteRegister(0x0020,0x0000);
+		LCD_WriteRegister(0x0021,0x0000);
+		for (i = 50000;i > 0;i--);
+		for (i = 50000;i > 0;i--);
+		LCD_WriteRegister(0x0030,0x0007);
+		LCD_WriteRegister(0x0031,0x0707);
+		LCD_WriteRegister(0x0032,0x0006);
+		LCD_WriteRegister(0x0035,0x0704);
+		LCD_WriteRegister(0x0036,0x1f04);
+		LCD_WriteRegister(0x0037,0x0004);
+		LCD_WriteRegister(0x0038,0x0000);
+		LCD_WriteRegister(0x0039,0x0706);
+		LCD_WriteRegister(0x003c,0x0701);
+		LCD_WriteRegister(0x003d,0x000f);
+		for (i = 50000;i > 0;i--);
+		for (i = 50000;i > 0;i--);
+		LCD_WriteRegister(0x0050,0x0000);
+		LCD_WriteRegister(0x0051,0x00ef);
+		LCD_WriteRegister(0x0052,0x0000);
+		LCD_WriteRegister(0x0053,0x013f);
+		LCD_WriteRegister(0x0060,0xa700);
+		LCD_WriteRegister(0x0061,0x0001);
+		LCD_WriteRegister(0x006a,0x0000);
+		LCD_WriteRegister(0x0080,0x0000);
+		LCD_WriteRegister(0x0081,0x0000);
+		LCD_WriteRegister(0x0082,0x0000);
+		LCD_WriteRegister(0x0083,0x0000);
+		LCD_WriteRegister(0x0084,0x0000);
+		LCD_WriteRegister(0x0085,0x0000);
+		LCD_WriteRegister(0x0090,0x0010);
+		LCD_WriteRegister(0x0092,0x0000);
+		LCD_WriteRegister(0x0093,0x0003);
+		LCD_WriteRegister(0x0095,0x0110);
+		LCD_WriteRegister(0x0097,0x0000);
+		LCD_WriteRegister(0x0098,0x0000);
+
+		// Display on sequence
+		LCD_WriteRegister(0x0007,0x0133);
+		LCD_WriteRegister(0x0020,0x0000);
+		LCD_WriteRegister(0x0021,0x0000);
+	}
+	else if (LCD_DeviceCode == 0x9320)
 	{
 		LCD_WriteRegister(0x00,0x0000);		// Start Oscillation
 		LCD_WriteRegister(0x01,0x0100);		// Driver output control (makes it scan top left to bottom right, odd for top half, even for bottom)
@@ -123,6 +198,135 @@ void LCD_Initialization()
 		LCD_WriteRegister(0x98,0x0000);		// (Panel interface control 6) Source output position 0 clocks
 
 		LCD_WriteRegister(0x07,0x0173);		// (Display control 1) Set display to operate, base image display, normal display (maybe should be 0x0173)
+	}
+	else if (LCD_DeviceCode == 0x9919)
+	{
+		LCD_WriteRegister(0x28,0x0006);
+		LCD_WriteRegister(0x00,0x0001);
+		LCD_WriteRegister(0x10,0x0000);
+		LCD_WriteRegister(0x01,0x72ef);
+		LCD_WriteRegister(0x02,0x0600);
+		LCD_WriteRegister(0x03,0x6a38);
+		LCD_WriteRegister(0x11,0x6874);
+
+		LCD_WriteRegister(0x0f,0x0000);
+		LCD_WriteRegister(0x0b,0x5308);
+		LCD_WriteRegister(0x0c,0x0003);
+		LCD_WriteRegister(0x0d,0x000a);
+		LCD_WriteRegister(0x0c,0x0003);
+		LCD_WriteRegister(0x0d,0x000a);
+		LCD_WriteRegister(0x0e,0x2e00);
+		LCD_WriteRegister(0x1e,0x00be);
+		LCD_WriteRegister(0x25,0x8000);
+		LCD_WriteRegister(0x26,0x7800);
+		LCD_WriteRegister(0x27,0x0078);
+		LCD_WriteRegister(0x4e,0x0000);
+		LCD_WriteRegister(0x4f,0x0000);
+		LCD_WriteRegister(0x12,0x08d9);
+
+		LCD_WriteRegister(0x30,0x0000);
+		LCD_WriteRegister(0x31,0x0104);
+		LCD_WriteRegister(0x32,0x0100);
+		LCD_WriteRegister(0x33,0x0305);
+		LCD_WriteRegister(0x34,0x0505);
+		LCD_WriteRegister(0x35,0x0305);
+		LCD_WriteRegister(0x36,0x0707);
+		LCD_WriteRegister(0x37,0x0300);
+		LCD_WriteRegister(0x3a,0x1200);
+		LCD_WriteRegister(0x3b,0x0800);
+		LCD_WriteRegister(0x07,0x0033);
+	}
+	else if (LCD_DeviceCode == 0x4531) 
+	{
+		LCD_WriteRegister(0x00,0x0001);
+		LCD_WriteRegister(0x10,0x0628);
+		LCD_WriteRegister(0x12,0x0006);
+		LCD_WriteRegister(0x13,0x0A32);
+		LCD_WriteRegister(0x11,0x0040);
+		LCD_WriteRegister(0x15,0x0050);
+		LCD_WriteRegister(0x12,0x0016);
+		LCD_Delay(15);
+		LCD_WriteRegister(0x10,0x5660);
+		LCD_Delay(15);
+		LCD_WriteRegister(0x13,0x2A4E);
+		LCD_WriteRegister(0x01,0x0100);
+		LCD_WriteRegister(0x02,0x0300);
+		
+		LCD_WriteRegister(0x03,0x1030);
+
+		LCD_WriteRegister(0x08,0x0202);
+		LCD_WriteRegister(0x0A,0x0000);
+		LCD_WriteRegister(0x30,0x0000);
+		LCD_WriteRegister(0x31,0x0402);
+		LCD_WriteRegister(0x32,0x0106);
+		LCD_WriteRegister(0x33,0x0700);
+		LCD_WriteRegister(0x34,0x0104);
+		LCD_WriteRegister(0x35,0x0301);
+		LCD_WriteRegister(0x36,0x0707);
+		LCD_WriteRegister(0x37,0x0305);
+		LCD_WriteRegister(0x38,0x0208);
+		LCD_WriteRegister(0x39,0x0F0B);
+		LCD_Delay(15);
+		LCD_WriteRegister(0x41,0x0002);
+		LCD_WriteRegister(0x60,0x2700);
+		LCD_WriteRegister(0x61,0x0001);
+		LCD_WriteRegister(0x90,0x0119);
+		LCD_WriteRegister(0x92,0x010A);
+		LCD_WriteRegister(0x93,0x0004);
+		LCD_WriteRegister(0xA0,0x0100);
+		LCD_Delay(60);
+		LCD_WriteRegister(0x07,0x0133);
+		LCD_Delay(15);
+		LCD_WriteRegister(0xA0,0x0000);
+		LCD_Delay(20);
+	}
+	else if (LCD_DeviceCode == 0x7783)
+	{
+		LCD_WriteRegister(0x00FF,0x0001);
+		LCD_WriteRegister(0x00F3,0x0008);
+		LCD_WriteRegister(0x0001,0x0100);
+		LCD_WriteRegister(0x0002,0x0700);
+		LCD_WriteRegister(0x0003,0x1030);
+		LCD_WriteRegister(0x0008,0x0302);
+		LCD_WriteRegister(0x0009,0x0000);
+		LCD_WriteRegister(0x000A,0x0000);
+		LCD_WriteRegister(0x0010,0x0005);
+		LCD_WriteRegister(0x0011,0x0005);
+		LCD_WriteRegister(0x0012,0x0000);
+		LCD_WriteRegister(0x0013,0x0000);
+		LCD_Delay(50);
+		LCD_WriteRegister(0x0010,0x12B0);
+		LCD_Delay(50);
+		LCD_WriteRegister(0x0011,0x0007);
+		LCD_Delay(50);
+		LCD_WriteRegister(0x0012,0x008B);
+		LCD_Delay(50);
+		LCD_WriteRegister(0x0013,0x1700);
+		LCD_Delay(50);
+		LCD_WriteRegister(0x0029,0x0022);
+
+		LCD_WriteRegister(0x0030,0x0000);
+		LCD_WriteRegister(0x0031,0x0707);
+		LCD_WriteRegister(0x0032,0x0505);
+		LCD_WriteRegister(0x0035,0x0107);
+		LCD_WriteRegister(0x0036,0x0008);
+		LCD_WriteRegister(0x0037,0x0000);
+		LCD_WriteRegister(0x0038,0x0202);
+		LCD_WriteRegister(0x0039,0x0106);
+		LCD_WriteRegister(0x003C,0x0202);
+		LCD_WriteRegister(0x003D,0x0408);
+		LCD_Delay(50);
+
+		LCD_WriteRegister(0x0050,0x0000);
+		LCD_WriteRegister(0x0051,0x00EF);
+		LCD_WriteRegister(0x0052,0x0000);
+		LCD_WriteRegister(0x0053,0x013F);
+		LCD_WriteRegister(0x0060,0xA700);
+		LCD_WriteRegister(0x0061,0x0001);
+		LCD_WriteRegister(0x0090,0x0033);
+		LCD_WriteRegister(0x002B,0x000B);
+		LCD_WriteRegister(0x0007,0x0133);
+		LCD_Delay(50);
 	}
 	for (i = 50000;i > 0;i--);
 	LCD_Clear(LCD_Red);
@@ -352,8 +556,8 @@ __inline void LCD_WriteIndex(u16 idx)
  */
 void LCD_WriteData(u16 data)
 {
-	GPIOB->ODR = ((GPIOB->ODR&0x00ff) | (data << 8));
-	GPIOC->ODR = ((GPIOC->ODR&0xff00) | (data >> 8));
+	GPIOC->ODR = (GPIOC->ODR&0xff00)|(data&0x00ff);
+	GPIOB->ODR = (GPIOB->ODR&0x00ff)|(data&0xff00);
 }
 
 /*
@@ -398,7 +602,7 @@ __inline u16 LCD_ReadData(void)
 	u16 temp;
 	GPIOB->CRH = (GPIOB->CRH & 0x00000000) | 0x44444444;		// configure pins for reading
 	GPIOC->CRL = (GPIOC->CRL & 0x00000000) | 0x44444444;
-	temp = (((GPIOB->IDR) >> 8) | ((GPIOC->IDR) << 8));			// read in the data
+	temp = ((GPIOB->IDR&0xff00) | (GPIOC->IDR&0x00ff));
 	GPIOB->CRH = (GPIOB->CRH & 0x00000000) | 0x44444444;		// reconfigure back to normal operation
 	GPIOC->CRL = (GPIOC->CRL & 0x00000000) | 0x44444444;
 	return temp;
@@ -433,6 +637,7 @@ __inline void LCD_WriteRegister(u16 index,u16 data)
 {
 	Clr_Cs;
 	Clr_Rs;
+	Set_nRd;
 	LCD_WriteData(index);
 
 	Clr_nWr;Set_nWr;

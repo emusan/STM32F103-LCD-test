@@ -15,17 +15,17 @@ int main(int argc, char *argv[])
 {
 	LCD_Configuration();
 	LCD_Initialization();
-	//GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitTypeDef GPIO_InitStructure;
 	u32 delay;
 
 	/* GPIOA Periph clock enable */
-	//RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
 
 	/* Configure PC12 to mode: slow rise-time, pushpull output */
-	/*GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;//GPIO No. 0
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;//GPIO No. 0
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;;//slow rise time
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;// push-pull output
-	GPIO_Init(GPIOA,&GPIO_InitStructure);//GPIOA init*/
+	GPIO_Init(GPIOA,&GPIO_InitStructure);//GPIOA init
 
 	//LCD_Test();
 
@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
 		};
 
 		/* GPIO PA0 set, pin=high,LED2 off */
+		GPIOA->BSRR = GPIO_BSRR_BS2;
 		//GPIO_WriteBit(GPIOA,GPIO_Pin_1,Bit_SET);
 
 		/*delay ->> compiler optimizer settings must be "-O0" */
@@ -51,6 +52,7 @@ int main(int argc, char *argv[])
 		}
 
 		/* GPIO PA0 reset pin=low, LED2 on */
+		GPIOA->BSRR = GPIO_BSRR_BR2;
 		//GPIO_WriteBit(GPIOA,GPIO_Pin_1,Bit_RESET);
 
 		/* delay --> blah */
